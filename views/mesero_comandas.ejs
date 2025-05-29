@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Comandas - Mesero</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .badge-estado-pendiente { background-color:#ffc107 }
+    .badge-estado-lista     { background-color:#0d6efd }
+    .badge-estado-cerrada   { background-color:#dc3545 }
+    .notes-text { 
+      font-size: 0.8rem; 
+      color: #6c757d;
+      margin-top: 0.2rem;
+    }
+  </style>
+</head>
+<body class="container mt-4">
+  <%- include("partials/navbar") %>
+
+  <h3>Crear nueva comanda</h3>
+  <form method="POST" action="/mesero/crear" class="row g-3 mb-5" onsubmit="return validarComanda()">
+    <div class="col-md-3">
+      <label class="form-label">Mesa</label>
+      <select name="tableId" id="tableId" class="form-select" required>
+        <option value="" disabled selected>Selecciona mesa</option>
+        <% mesas.forEach(m => { %>
+          <option value="<%= m._id %>">Mesa <%= m.number %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <% ["comida","bebida","postre"].forEach(cat => { %>
+      <div class="col-md-3">
+        <label class="form-label text-capitalize"><%= cat %></label>
+        <select name="productIds[<%= cat %>]" id="prod_<%= cat %>" class="form-select" onchange="toggleQuantity(this, '<%= cat %>')">
+          <option value=""><%= cat === "comida" ? "Selecciona" : `Sin ${cat}` %></option>
+          <% productos.filter(p => p.category.toLowerCase() === cat).forEach(p => { %>
+            <option value="<%= p._id %>"><%= p.name %> - $<%= p.price.toFixed(2) %></option>
+          <% }) %>
+        </select>
+        <input 
+          type="number" 
+          name="quantities[<%= cat %>]" 
+          id="qty_<%= cat %>" 
+          min="1" 
+          value="1" 
+          class="form-control mt-1"
+        >
+        <textarea 
+          name="notes[<%= cat %>]" 
+          class="form-control mt-1" 
+          placeholder="Notas (ej: sin cebolla, sin picante, etc.)"
+          rows="1"
+        ></textarea>
+      </div>
+    <% }) %>
+
+    <div class="col-12">
+      <button class="btn btn-success">Agregar comanda</button>
+    </div>
+  </form>
+
+  <h3>Comandas pendientes</h3>
+  <% if (!ordenes.length) { %>
+    <p>No hay comandas pendientes.</p>
+  <% } else { %>
+    <table class="table">
+      <thead>
+        <tr><th>Mesa</th><th>Productos</th><th>Cant.</th><th>Estado</th><th>Acciones</th></tr>
+      </thead>
+      <tbody>
+        <% ordenes.forEach(o => { %>
+          <tr>
+            <td>Mesa <%= o.table?.number ?? "?" %></td>
+            <td>
+              <ul class="mb-0">
+                <% o.items.forEach(i => { %>
+                  <li>
+                    <%= i.product?.name || '[Producto no disponible]' %>
+                    <% if(i.notes) { %>
+                      <div class="notes-text">Nota: <%= i.notes %></div>
+                    <% } %>
+                  </li>
+                <% }) %>
+              </ul>
+            </td>
+            <td>
+              <ul class="mb-0">
+                <% o.items.forEach(i => { %>
+                  <li><%= i.quantity %></li>
+                <% }) %>
+              </ul>
+            </td>
+            <td>
+              <% 
+                const badge = o.status === "Pendiente" ? "badge-estado-pendiente" :
+                              o.status === "Lista" ? "badge-estado-lista" :
+                              "badge-estado-cerrada"; 
+              %>
+              <span class="badge <%= badge %>"><%= o.status %></span>
+            </td>
+            <td>
+              <% if(o.status !== "Cerrada"){ %>
+                <form method="POST" action="/mesero/comandas/actualizar-estado/<%= o._id %>" style="display:inline;">
+                  <% if(o.status === "Pendiente"){ %>
+                    <input type="hidden" name="status" value="Lista">
+                    <button class="btn btn-primary btn-sm">Marcar Lista</button>
+                  <% } else { %>
+                    <input type="hidden" name="status" value="Cerrada">
+                    <button class="btn btn-danger btn-sm">Cerrar</button>
+                  <% } %>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    function toggleQuantity(select, category) {
+      const qtyInput = document.getElementById(`qty_${category}`);
+      qtyInput.disabled = !select.value;
+      if (!select.value) qtyInput.value = 0;
+      else if (qtyInput.value < 1) qtyInput.value = 1;
+    }
+
+    function validarComanda() {
+      const comida = document.getElementById("prod_comida").value;
+      const qty = parseInt(document.getElementById("qty_comida").value || "0", 10);
+      if (!comida || qty < 1) {
+        alert("Debe seleccionar al menos un producto de comida con cantidad válida");
+        return false;
+      }
+      return true;
+    }
+
+    const socket = io();
+    socket.on("comandaCreada", () => location.reload());
+    socket.on("comandaActualizada", () => location.reload());
+  </script>
+</body>
+</html>

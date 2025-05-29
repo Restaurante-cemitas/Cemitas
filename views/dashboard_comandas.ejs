@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Comandas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-4">
+  <%- include("partials/navbar") %>
+
+  <h3>Crear nueva comanda</h3>
+
+  <form method="POST" action="/comandas" class="row g-3 mb-4">
+    <div class="col-md-4">
+      <label for="comida" class="form-label">Comida</label>
+      <select name="comida" id="comida" class="form-select" required>
+        <% comidas.forEach(c => { %>
+          <option value="<%= c._id %>"><%= c.name %> - $<%= c.price %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="col-md-4">
+      <label for="bebida" class="form-label">Bebida</label>
+      <select name="bebida" id="bebida" class="form-select">
+        <option value="">Sin bebida</option>
+        <% bebidas.forEach(b => { %>
+          <option value="<%= b._id %>"><%= b.name %> - $<%= b.price %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="col-md-4">
+      <label for="postre" class="form-label">Postre</label>
+      <select name="postre" id="postre" class="form-select">
+        <option value="">Sin postre</option>
+        <% postres.forEach(p => { %>
+          <option value="<%= p._id %>"><%= p.name %> - $<%= p.price %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="col-12">
+      <button class="btn btn-primary">Enviar comanda</button>
+    </div>
+  </form>
+</body>
+</html>

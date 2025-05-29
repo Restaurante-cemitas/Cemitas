@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Ticket Mesa <%= orden.table?.number ?? "?" %></title>
+  <style>
+    body { 
+      font-family: "Courier New", monospace; 
+      margin: 0; 
+      padding: 20px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    h2 { 
+      text-align: center; 
+      margin: 0 0 10px 0; 
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    td, th { 
+      padding: 4px 0; 
+    }
+    tfoot td { 
+      font-weight: bold; 
+      border-top: 1px solid #000; 
+    }
+    .notes-cell { 
+      font-size: 0.8em; 
+      color: #666; 
+      font-style: italic;
+    }
+    .no-print {
+      display: none;
+    }
+    @media screen {
+      .print-only {
+        display: none;
+      }
+      .no-print {
+        display: block;
+        text-align: center;
+        margin-top: 30px;
+      }
+      .btn-return {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="print-only">
+    <h2>Cemitas - Ticket</h2>
+    <p>Mesa: <strong><%= orden.table?.number ?? "?" %></strong></p>
+    <p>Fecha: <%= new Date(orden.closedAt || orden.createdAt).toLocaleString() %></p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th style="text-align:center">Cant</th>
+          <th style="text-align:right">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% let total = 0; %>
+        <% orden.items.forEach(it => { 
+             if (!it.product) return;
+             const sub = it.product.price * it.quantity;
+             total += sub;
+        %>
+          <tr>
+            <td>
+              <%= it.product.name %>
+              <% if (it.notes) { %>
+                <div class="notes-cell">Nota: <%= it.notes %></div>
+              <% } %>
+            </td>
+            <td style="text-align:center"><%= it.quantity %></td>
+            <td style="text-align:right">$<%= sub.toFixed(2) %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2">TOTAL</td>
+          <td style="text-align:right">$<%= total.toFixed(2) %></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <p style="text-align:center; margin-top:20px;">¡Gracias por su compra!</p>
+  </div>
+
+  <div class="no-print">
+    <h2>Ticket impreso correctamente</h2>
+    <p>El ticket para la Mesa <%= orden.table?.number ?? "?" %> ha sido generado.</p>
+    <button class="btn-return" onclick="window.location.href='/caja'">Regresar a Caja</button>
+  </div>
+
+  <script>
+    // Imprimir automáticamente al cargar
+    window.addEventListener('load', function() {
+      window.print();
+      
+      // Notificar al servidor que se ha impreso (si es necesario)
+      fetch(`/caja/ticket-impreso/<%= orden._id %>`, {
+        method: 'POST'
+      });
+    });
+    
+    // Actualizar la página padre si estamos en un popup
+    if (window.opener) {
+      window.opener.location.reload();
+    }
+  </script>
+</body>
+</html>

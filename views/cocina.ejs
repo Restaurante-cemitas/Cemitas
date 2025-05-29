@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cocina</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .order-notes { 
+      background-color: #fff3cd; 
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      font-size: 0.9em;
+    }
+    .product-quantity {
+      font-weight: bold;
+      color: #0d6efd;
+    }
+  </style>
+</head>
+<body class="container mt-4">
+  <%- include("partials/navbar") %>
+
+  <h3>Órdenes pendientes</h3>
+  <% if (ordenes.length === 0) { %>
+    <div class="alert alert-info">No hay órdenes pendientes</div>
+  <% } %>
+  
+  <% ordenes.forEach(o => { %>
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Mesa: <%= o.table?.number || '?' %></span>
+        <span class="badge bg-primary">Orden #<%= o._id.toString().slice(-6) %></span>
+      </div>
+      <ul class="list-group list-group-flush">
+        <% o.items.forEach(i => { %>
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+              <div>
+                <strong><%= i.product?.category || 'Producto' %>:</strong> 
+                <%= i.product?.name || '[Producto no disponible]' %>
+                <span class="product-quantity ms-2">x<%= i.quantity %></span>
+              </div>
+            </div>
+            <% if (i.notes) { %>
+              <div class="order-notes mt-2">
+                <strong>Notas:</strong> <%= i.notes %>
+              </div>
+            <% } %>
+          </li>
+        <% }) %>
+      </ul>
+
+      <div class="card-footer">
+        <% if (o.status === "Pendiente") { %>
+          <form method="POST" action="/cocina/ordenes/servir/<%= o._id %>" class="d-inline">
+            <button type="submit" class="btn btn-primary">Marcar como Lista</button>
+          </form>
+        <% } else if (o.status === "Lista") { %>
+          <div class="alert alert-success mb-0">Lista para servir</div>
+        <% } %>
+      </div>
+    </div>
+  <% }) %>
+</body>
+</html>

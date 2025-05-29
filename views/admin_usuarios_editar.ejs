@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Editar Usuario</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-4">
+  <%- include("partials/navbar") %>
+
+  <h1 class="mb-4">Editar Usuario</h1>
+
+  <form method="POST" action="/admin/usuarios/editar/<%= usuario._id %>" class="row g-3 mb-4">
+
+    <div class="col-md-3">
+      <label class="form-label">Nombre de usuario</label>
+      <input class="form-control" name="username" required value="<%= usuario.username %>">
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Email</label>
+      <input class="form-control" name="email" type="email" required value="<%= usuario.email %>">
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Contraseña nueva</label>
+      <input class="form-control" name="password" type="password" placeholder="(opcional)">
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Rol</label>
+      <select name="role" class="form-select" required>
+        <% ["ADMIN", "MESERO", "COCINA", "CAJA"].forEach(r => { %>
+          <option value="<%= r %>" <%= usuario.role === r ? "selected" : "" %>><%= r %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="col-md-1 d-flex align-items-end">
+      <button class="btn btn-success w-100">Guardar</button>
+    </div>
+
+  </form>
+
+  <a href="/admin/usuarios" class="btn btn-link">← Volver a gestión de usuarios</a>
+</body>
+</html>

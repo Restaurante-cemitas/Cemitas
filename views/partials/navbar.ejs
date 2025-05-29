@@ -1,0 +1,9 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4>Sistema de Cemitas</h4>
+    <small>Usuario: <strong><%= user?.name %></strong> (<%= user?.role %>)</small>
+  </div>
+  <form action="/logout" method="GET">
+    <button class="btn btn-danger">Cerrar sesión</button>
+  </form>
+</div>

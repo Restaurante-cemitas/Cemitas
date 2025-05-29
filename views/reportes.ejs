@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Reportes de ventas</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container mt-4">
+  <%- include("partials/navbar", { user: user }) %>
+
+  <h3>Ventas cerradas</h3>
+  <form method="GET" class="row g-2 mb-3">
+    <input type="date" name="desde" class="col form-control" value="<%= desde || '' %>">
+    <input type="date" name="hasta" class="col form-control" value="<%= hasta || '' %>">
+    <button class="col btn btn-info">Filtrar</button>
+  </form>
+
+  <p class="mb-3"><strong>Total ventas:</strong> $<%= (totalDia || 0).toFixed(2) %></p>
+
+  <h4>Detalle por producto</h4>
+
+  <% if (Object.keys(productos).length === 0) { %>
+    <p>No se encontraron ventas en el rango seleccionado.</p>
+  <% } else { %>
+    <ul class="list-group">
+      <% Object.entries(productos).forEach(([prod, tot]) => { %>
+        <li class="list-group-item d-flex justify-content-between">
+          <span><%= prod %></span><span>$<%= tot.toFixed(2) %></span>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+</body>
+</html>
